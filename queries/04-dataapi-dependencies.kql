@@ -1,0 +1,16 @@
+// 04 - dataApi calls: volume, failures and p95 duration.
+//
+// Run this BEFORE filtering on `type`. The docs do not list the `type` value used for
+// dataApi operations, and Dataverse's own server-side calls also land in dependencies.
+// Let the first run tell you which value belongs to your page, then add:
+//   | where type == "<value you found>"
+//
+// tobool(success): in the legacy `dependencies` table `success` is documented as a
+// STRING (it is a bool only in the workspace table AppDependencies), so a bare
+// `success == false` compares a string with a bool. tobool() is correct for both.
+// https://learn.microsoft.com/azure/azure-monitor/app/apm-tables
+dependencies
+| where timestamp > ago(7d)
+| where cloud_RoleInstance == "CDS Data Export"
+| summarize calls = count(), failed = countif(tobool(success) == false), p95 = percentile(duration, 95) by type, name
+| order by p95 desc

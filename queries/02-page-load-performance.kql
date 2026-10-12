@@ -1,0 +1,12 @@
+// 02 - Page load performance per page.
+//
+// Groups by the standard `name` column. If the reconnaissance query showed the page
+// name living in customDimensions instead, replace `by name` with:
+//   by pageName = tostring(customDimensions["<key you found>"])
+//
+// Watch p95, not the average: the average hides the users having the worst time.
+pageViews
+| where timestamp > ago(7d)
+| where cloud_RoleInstance == "CDS Data Export"
+| summarize loads = count(), p50 = percentile(duration, 50), p95 = percentile(duration, 95) by name
+| order by p95 desc

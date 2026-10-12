@@ -1,0 +1,18 @@
+// 01 - Reconnaissance. Run this FIRST, before anything else in this folder.
+//
+// The generative pages articles name the information each telemetry row carries
+// (page ID, page name, app, host type, load duration, navigation origin) but not the
+// column or customDimensions key each value lives in. This query shows you what
+// actually arrives, so the later queries are built on your data, not on assumptions.
+//
+// cloud_RoleInstance == "CDS Data Export" is the documented marker for rows written by
+// the Power Platform data export:
+// https://learn.microsoft.com/power-platform/admin/overview-integration-application-insights#common-fields
+// If this returns nothing while the same query WITHOUT that line returns your page,
+// drop the filter and note the value you see instead.
+union pageViews, exceptions, dependencies
+| where timestamp > ago(2d)
+| where cloud_RoleInstance == "CDS Data Export"
+| project timestamp, itemType, name, duration, success, operation_Id, session_Id, customDimensions
+| order by timestamp desc
+| take 50

@@ -1,0 +1,13 @@
+// 03 - Unhandled errors, grouped.
+//
+// After clicking the "Break me" button (page/break-me-button.tsx) twice, the
+// "Telemetry smoke test" message should appear in outerMessage with two occurrences.
+//
+// `users` turns a crash list into a priority list: one user hitting something forty
+// times is a different conversation from forty users hitting it once.
+// Wire this query to an Azure Monitor alert rule for crash notification.
+exceptions
+| where timestamp > ago(7d)
+| where cloud_RoleInstance == "CDS Data Export"
+| summarize occurrences = count(), users = dcount(user_Id), lastSeen = max(timestamp) by problemId, outerMessage
+| order by occurrences desc
